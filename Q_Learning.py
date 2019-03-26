@@ -1,62 +1,89 @@
 # Python 3.7
 
+from QLearning.QLearning import *
 import gym
-import numpy
+import numpy as np
+
+#####################
+# CREATE ENVIROMENT #
+#####################
 
 # env = gym.make('FrozenLake-v0')
 env = gym.make('FrozenLake8x8-v0')
-print(env.observation_space)
 
-qTable = [[0.0, 0.0, 0.0, 0.0] for i in range(64)]
+# print(env.observation_space.n)
+# print(env.action_space.n)
 
-print(env.action_space)
-print(env.observation_space)
-for i in range(10000):
+
+##############
+# PARAMETERS #
+##############
+
+# environment settings
+param_n_states = env.observation_space.n
+param_n_actions = env.action_space.n
+
+# learning settings
+param_n_learn_epochs = 1000
+param_n_learn_steps_per_epoch = 100
+param_learn_rate = 0.05
+param_discount_factor = 0.85
+
+# testing settings
+param_n_test_epochs = 5000
+param_n_test_steps_per_epoch = 100
+
+
+################
+# CREATE AGENT #
+################
+
+qTable = QTable(param_n_states, param_n_actions, learn_rate=param_learn_rate, discount_factor=param_discount_factor)
+
+
+#########
+# LEARN #
+#########
+
+for i in range(param_n_learn_epochs):
     observation = env.reset()
-    for _ in range(100):
-        # print()
-        # print()
+    for _ in range(param_n_learn_steps_per_epoch):
+        # select optimal action
+        act = qTable.optimal_action(observation)
 
-        # env.render()
+        # choose to explore or exploit
+        act = discrete_action_generator(act, param_n_actions, 1 - (i / param_n_learn_epochs))
 
-        logic_act = numpy.argmax(qTable[observation])
-        random_act = numpy.random.choice(4)
-        act = numpy.random.choice([logic_act, random_act], p=[(i / 10000.0), 1 - (i / 10000.0)])
-
+        # take action
         new_observation, reward, done, info = env.step(act)
 
+        # define reward
         if done and reward == 0.0:
-            reward = -1.0
-        # elif done and reward > 0.0:
-        #     reward = 10
+            reward = -0.5
         elif not done:
-            reward = -0.05
+            reward = -0.01
 
-        # for row in qTable:
-        #     print('{:0.4f}  {:0.4f}  {:0.4f}  {:0.4f}'.format(*row))
+        # update Q_table
+        qTable.learn(observation, new_observation, act, reward)
 
-        # print("obs: ", observation, " > ", new_observation)
-        # print("act: ", act)
-        # print("reward", reward)
-
-        qTable[observation][act] = qTable[observation][act] + (0.01 * (reward + (0.9 * max(qTable[new_observation])) - qTable[observation][act]))
-
+        # update last state
         observation = new_observation
-        # time.sleep(1)
 
+        # quite when goal is reached
         if done:
             break
 
+
+########
+# TEST #
+########
+
 total_reward = 0
 runOut = []
-total_runs = 1000
-for loop in range(total_runs):
+for loop in range(param_n_test_epochs):
     observation = env.reset()
-    for step in range(100):
-        # env.render()
-
-        act = numpy.argmax(qTable[observation])
-        # act = numpy.random.choice(4)
+    for step in range(param_n_test_steps_per_epoch):
+        act = qTable.optimal_action(observation)
         observation, reward, done, info = env.step(act)
 
         if done:
@@ -64,35 +91,32 @@ for loop in range(total_runs):
             runOut.append(step)
             break
 
+
+################
+# PRINT RESULT #
+################
+
 env.render()
 
-print("Total Reward: {}%".format((total_reward / total_runs) * 100))
-print("Run out: {}".format(numpy.mean(runOut)))
-
+print("Total Reward: {:0.2f}%".format((total_reward / param_n_test_epochs) * 100))
+print("Run out: {:0.0f}".format(np.mean(runOut)))
 
 print()
 move = ['<', '\u2193', '>', '^']
 
-for row in range(8):
-    test = []
-    for col in range(8):
-        if col == 7 and row == 7:
-            direction = '*'
-        elif max(qTable[(row * 8) + col]) == 0.0:
-            direction = ' '
-        else:
-            direction = move[numpy.argmax(qTable[(row * 4) + col])]
-        test.append(direction)
-    print("| {}  {}  {}  {} {}  {}  {}  {} |".format(*test))
+# for row in range(8):
+#     test = []
+#     for col in range(8):
+#         test.append('{:0.4f} '.format(qTable.optimal_action_value((row * 4) + col)))
+#     print(test)
+#
+# print()
+# print()
+#
+# for row in range(8):
+#     test = []
+#     for col in range(8):
+#         test.append('{:0.4f}    {:0.4f}    {:0.4f}    {:0.4f}  |'.format(*qTable[(row * 4) + col]))
+#     print(test)
 
-print()
-print()
-
-for row in range(8):
-    test = []
-    for col in range(8):
-        test.append('{:0.4f}    {:0.4f}    {:0.4f}    {:0.4f}  |'.format(*qTable[(row * 4) + col]))
-    print(test)
-
-print()
-print()
+qTable.print_masked_table(8, move)
