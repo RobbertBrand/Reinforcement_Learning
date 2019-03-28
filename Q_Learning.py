@@ -11,9 +11,6 @@ import numpy as np
 # env = gym.make('FrozenLake-v0')
 env = gym.make('FrozenLake8x8-v0')
 
-# print(env.observation_space.n)
-# print(env.action_space.n)
-
 
 ##############
 # PARAMETERS #
@@ -22,6 +19,7 @@ env = gym.make('FrozenLake8x8-v0')
 # environment settings
 param_n_states = env.observation_space.n
 param_n_actions = env.action_space.n
+param_action_mask = ['<', '\u2193', '>', '^']
 
 # learning settings
 param_n_learn_epochs = 1000
@@ -38,8 +36,11 @@ param_n_test_steps_per_epoch = 100
 # CREATE AGENT #
 ################
 
-qTable = QTable(param_n_states, param_n_actions, learn_rate=param_learn_rate, discount_factor=param_discount_factor)
-
+qTable = QTable(param_n_states,
+                param_n_actions,
+                learn_rate=param_learn_rate,
+                discount_factor=param_discount_factor,
+                action_mask=param_action_mask)
 
 #########
 # LEARN #
@@ -97,26 +98,18 @@ for loop in range(param_n_test_epochs):
 ################
 
 env.render()
-
+print()
 print("Total Reward: {:0.2f}%".format((total_reward / param_n_test_epochs) * 100))
 print("Run out: {:0.0f}".format(np.mean(runOut)))
-
 print()
-move = ['<', '\u2193', '>', '^']
-
-# for row in range(8):
-#     test = []
-#     for col in range(8):
-#         test.append('{:0.4f} '.format(qTable.optimal_action_value((row * 4) + col)))
-#     print(test)
-#
-# print()
-# print()
-#
-# for row in range(8):
-#     test = []
-#     for col in range(8):
-#         test.append('{:0.4f}    {:0.4f}    {:0.4f}    {:0.4f}  |'.format(*qTable[(row * 4) + col]))
-#     print(test)
-
-qTable.print_masked_table(8, move)
+print("Q action map")
+qTable.print_action_table_masked(8)
+print()
+print("Action Table")
+qTable.print_action_table(8)
+print()
+print("Value Table")
+qTable.print_value_table(8)
+print()
+print("Q Table")
+qTable.print_q_table()

@@ -71,6 +71,7 @@ class QTable:
         print_table_from_flat_list(printable, table_row_length)
 
     def print_action_table_masked(self, table_row_length=1, hide_invalid_action=True):
+        assert self.action_mask is not None
         printable = [self.action_mask[self.optimal_action_valid(i, hide_invalid_action)] for i in
                      range(len(self.qTable))]
         print_table_from_flat_list(printable, table_row_length)
@@ -85,5 +86,17 @@ class QTable:
 
 
 def print_table_from_flat_list(flat_list, table_row_length):
+    print_format = print_format_creator(flat_list[0], table_row_length)
+    print(print_format)
     for row in range(0, len(flat_list), table_row_length):
-        print('|', ' '.join(flat_list[row:row + table_row_length]), '|')
+        print('|', print_format.format(*flat_list[row:row + table_row_length]), '|')
+
+
+def print_format_creator(type_spec, length):
+    if type(type_spec) is int:
+        print_format = ''.join(['{:5.0}'] * length)
+    elif type(type_spec) is float:
+        print_format = ''.join([' {:0.4f} '] * length)
+    else:
+        print_format = ' '.join([' {} '] * length)
+    return print_format
