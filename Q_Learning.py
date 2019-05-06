@@ -4,9 +4,9 @@ from QLearning.QLearning import *
 import gym
 import numpy as np
 
-#####################
-# CREATE ENVIROMENT #
-#####################
+######################
+# CREATE ENVIRONMENT #
+######################
 
 # env = gym.make('FrozenLake-v0')
 env = gym.make('FrozenLake8x8-v0')
@@ -23,13 +23,13 @@ param_action_mask = ['<', '\u2193', '>', '^']
 
 # learning settings
 param_n_learn_epochs = 1000
-param_n_learn_steps_per_epoch = 100
+param_n_learn_max_steps_per_epoch = 100
 param_learn_rate = 0.05
 param_discount_factor = 0.85
 
 # testing settings
 param_n_test_epochs = 5000
-param_n_test_steps_per_epoch = 100
+param_n_test_max_steps_per_epoch = 100
 
 
 ################
@@ -48,7 +48,7 @@ qTable = QTable(param_n_states,
 
 for i in range(param_n_learn_epochs):
     observation = env.reset()
-    for _ in range(param_n_learn_steps_per_epoch):
+    for _ in range(param_n_learn_max_steps_per_epoch):
         # select optimal action
         act = qTable.optimal_action(observation)
 
@@ -83,7 +83,7 @@ total_reward = 0
 runOut = []
 for loop in range(param_n_test_epochs):
     observation = env.reset()
-    for step in range(param_n_test_steps_per_epoch):
+    for step in range(param_n_test_max_steps_per_epoch):
         act = qTable.optimal_action(observation)
         observation, reward, done, info = env.step(act)
 
