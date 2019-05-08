@@ -1,4 +1,8 @@
-# Python 3.7
+"""
+    Reinforcement Learning implementation, Made by Robbert Brand.
+
+    Runs on Python 3.7
+"""
 
 from QLearning.QLearning import *
 import gym
@@ -104,12 +108,12 @@ print("Run out: {:0.0f}".format(np.mean(runOut)))
 print()
 print("Q action map")
 qTable.print_action_table_masked(8)
-print()
-print("Action Table")
-qTable.print_action_table(8)
-print()
-print("Value Table")
-qTable.print_value_table(8)
-print()
-print("Q Table")
-qTable.print_q_table()
+# print()
+# print("Action Table")
+# qTable.print_action_table(8)
+# print()
+# print("Value Table")
+# qTable.print_value_table(8)
+# print()
+# print("Q Table")
+# qTable.print_q_table()

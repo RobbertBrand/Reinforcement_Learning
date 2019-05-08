@@ -230,7 +230,6 @@ def print_table_from_flat_list(flat_list, table_row_length):
     :param table_row_length: print given amount flat_list items per row.
     """
     print_format = print_format_creator(flat_list[0], table_row_length)
-    print(print_format)
     for row in range(0, len(flat_list), table_row_length):
         print('|', print_format.format(*flat_list[row:row + table_row_length]), '|')
 
