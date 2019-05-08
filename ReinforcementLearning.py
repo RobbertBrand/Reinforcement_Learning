@@ -4,7 +4,7 @@
     Runs on Python 3.7
 """
 
-from QLearning.QLearning import *
+from QLearning.QTable.QTable import *
 import gym
 import numpy as np
 
@@ -12,9 +12,8 @@ import numpy as np
 # CREATE ENVIRONMENT #
 ######################
 
-# env = gym.make('FrozenLake-v0')
-env = gym.make('FrozenLake8x8-v0')
-
+env = gym.make('FrozenLake-v0')
+# env = gym.make('FrozenLake8x8-v0')
 
 ##############
 # PARAMETERS #
@@ -107,13 +106,13 @@ print("Total Reward: {:0.2f}%".format((total_reward / param_n_test_epochs) * 100
 print("Run out: {:0.0f}".format(np.mean(runOut)))
 print()
 print("Q action map")
-qTable.print_action_table_masked(8)
+qTable.print_action_table_masked(np.sqrt(param_n_states).astype(int))
 # print()
 # print("Action Table")
-# qTable.print_action_table(8)
+# qTable.print_action_table(np.sqrt(param_n_states).astype(int))
 # print()
 # print("Value Table")
-# qTable.print_value_table(8)
+# qTable.print_value_table(np.sqrt(param_n_states).astype(int))
 # print()
 # print("Q Table")
 # qTable.print_q_table()
