@@ -115,6 +115,10 @@ for j in range(param_train_test_cycles):
     train_test_cycle_reward_list.append((total_reward / param_n_test_epochs) * 100)
     train_test_cycle_runout_list.append(np.mean(runOut))
 
+    ######################
+    # PRINT CYCLE RESULT #
+    ######################
+
     print("Q learning cycle {}".format(j))
     print()
     print("Q action map")
@@ -129,6 +133,7 @@ for j in range(param_train_test_cycles):
     # print("Q Table")
     # qTable.print_q_table(np.sqrt(param_n_states).astype(int))
     # print()
+    print()
 
 
 ################
@@ -136,6 +141,7 @@ for j in range(param_train_test_cycles):
 ################
 
 print("Train Test cycles result")
+print()
 env.render()
 print()
 print("Mean Reward over cycles: {:0.2f}%".format(np.mean(train_test_cycle_reward_list)))
