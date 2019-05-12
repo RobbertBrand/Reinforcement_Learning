@@ -22,97 +22,124 @@ env = gym.make('FrozenLake-v0')
 # environment settings
 param_n_states = env.observation_space.n
 param_n_actions = env.action_space.n
+#                   ['LEFT',   'DOWN',   'RIGHT',  'UP',     'NON']
+# param_action_mask = ['\u2b9C', '\u2b9f', '\u2b9e', '\u2b9d', ' ']
 param_action_mask = ['<', '\u2193', '>', '^']
 
 # learning settings
-param_n_learn_epochs = 1000
+param_n_learn_epochs = 4000
 param_n_learn_max_steps_per_epoch = 100
+param_train_test_cycles = 10
+
 param_learn_rate = 0.05
-param_discount_factor = 0.85
+param_discount_factor = 0.99
+
+# reward settings
+param_reward_step = 0.0
+param_reward_lost = 0.0
+param_reward_win = 1.0
 
 # testing settings
-param_n_test_epochs = 5000
+param_n_test_epochs = 100
 param_n_test_max_steps_per_epoch = 100
 
+#########################
+# RUN TRAIN TEST CYCLES #
+#########################
 
-################
-# CREATE AGENT #
-################
+train_test_cycle_reward_list = []
+train_test_cycle_runout_list = []
 
-qTable = QTable(param_n_states,
-                param_n_actions,
-                learn_rate=param_learn_rate,
-                discount_factor=param_discount_factor,
-                action_mask=param_action_mask)
+for j in range(param_train_test_cycles):
+    ################
+    # CREATE AGENT #
+    ################
 
-#########
-# LEARN #
-#########
+    qTable = QTable(param_n_states,
+                    param_n_actions,
+                    learn_rate=param_learn_rate,
+                    discount_factor=param_discount_factor,
+                    action_mask=param_action_mask)
 
-for i in range(param_n_learn_epochs):
-    observation = env.reset()
-    for _ in range(param_n_learn_max_steps_per_epoch):
-        # select optimal action
-        act = qTable.optimal_action(observation)
+    #########
+    # LEARN #
+    #########
 
-        # choose to explore or exploit
-        act = discrete_action_generator(act, param_n_actions, 1 - (i / param_n_learn_epochs))
+    for i in range(param_n_learn_epochs):
+        observation = env.reset()
+        for _ in range(param_n_learn_max_steps_per_epoch):
+            # select optimal action
+            act = qTable.optimal_action(observation)
 
-        # take action
-        new_observation, reward, done, info = env.step(act)
+            # choose to explore or exploit
+            act = discrete_action_generator(act, param_n_actions, 1 - (i / param_n_learn_epochs))
 
-        # define reward
-        if done and reward == 0.0:
-            reward = -0.5
-        elif not done:
-            reward = -0.01
+            # take action
+            new_observation, reward, done, info = env.step(act)
 
-        # update Q_table
-        qTable.learn(observation, new_observation, act, reward)
+            # define reward
+            if done and reward == 0.0:
+                reward = param_reward_lost
+            elif done and reward == 1.0:
+                reward = param_reward_win
+            elif not done:
+                reward = param_reward_step
 
-        # update last state
-        observation = new_observation
+            # update Q_table
+            qTable.learn(observation, new_observation, act, reward)
 
-        # quite when goal is reached
-        if done:
-            break
+            # update last state
+            observation = new_observation
 
+            # quite when goal is reached
+            if done:
+                break
 
-########
-# TEST #
-########
+    ########
+    # TEST #
+    ########
 
-total_reward = 0
-runOut = []
-for loop in range(param_n_test_epochs):
-    observation = env.reset()
-    for step in range(param_n_test_max_steps_per_epoch):
-        act = qTable.optimal_action(observation)
-        observation, reward, done, info = env.step(act)
+    total_reward = 0
+    runOut = []
+    for loop in range(param_n_test_epochs):
+        observation = env.reset()
+        for step in range(param_n_test_max_steps_per_epoch):
+            act = qTable.optimal_action(observation)
+            observation, reward, done, info = env.step(act)
 
-        if done:
-            total_reward += reward
-            runOut.append(step)
-            break
+            if done:
+                total_reward += reward
+                runOut.append(step)
+                break
+
+    train_test_cycle_reward_list.append((total_reward / param_n_test_epochs) * 100)
+    train_test_cycle_runout_list.append(np.mean(runOut))
+
+    print("Q learning cycle {}".format(j))
+    print()
+    print("Q action map")
+    qTable.print_action_table_masked(np.sqrt(param_n_states).astype(int))
+    print()
+    # print("Action Table")
+    # qTable.print_action_table(np.sqrt(param_n_states).astype(int))
+    # print()
+    print("Value Table")
+    qTable.print_value_table(np.sqrt(param_n_states).astype(int))
+    print()
+    # print("Q Table")
+    # qTable.print_q_table(np.sqrt(param_n_states).astype(int))
+    # print()
 
 
 ################
 # PRINT RESULT #
 ################
 
+print("Train Test cycles result")
 env.render()
 print()
-print("Total Reward: {:0.2f}%".format((total_reward / param_n_test_epochs) * 100))
-print("Run out: {:0.0f}".format(np.mean(runOut)))
+print("Mean Reward over cycles: {:0.2f}%".format(np.mean(train_test_cycle_reward_list)))
+print(("Reward per cycle:       " + (" {:0.2f}%" * param_train_test_cycles)).format(*train_test_cycle_reward_list))
+print("Mean steps over cycles:  {:0.0f}".format(np.mean(runOut)))
+print(("Steps per cycle:        " + (" {:0.0f}    " * param_train_test_cycles)).format(*train_test_cycle_runout_list))
 print()
-print("Q action map")
-qTable.print_action_table_masked(np.sqrt(param_n_states).astype(int))
-# print()
-# print("Action Table")
-# qTable.print_action_table(np.sqrt(param_n_states).astype(int))
-# print()
-# print("Value Table")
-# qTable.print_value_table(np.sqrt(param_n_states).astype(int))
-# print()
-# print("Q Table")
-# qTable.print_q_table()

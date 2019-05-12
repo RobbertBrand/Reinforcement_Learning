@@ -188,7 +188,7 @@ class QTable:
         print best q_value per state.
         :param table_row_length: print given amount states per row.
         """
-        printable_q_table = [[self.optimal_action_value(i)] for i in range(len(self.qTable))]
+        printable_q_table = [self.optimal_action_value(i) for i in range(len(self.qTable))]
         print_table_from_flat_list(printable_q_table, table_row_length)
 
     def print_q_table(self, table_row_length=1):
