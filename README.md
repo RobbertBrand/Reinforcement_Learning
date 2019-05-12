@@ -1,4 +1,4 @@
-#Reinforcement Learning
+# Reinforcement Learning
 A Q Learning implementation in python, learning to play an OpenAI Gym game.
 
 ## Description
