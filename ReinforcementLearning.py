@@ -5,6 +5,7 @@
 """
 
 from QLearning.QTable.QTable import *
+from QLearning.QLearning import *
 import gym
 import numpy as np
 
